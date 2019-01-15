@@ -8,7 +8,7 @@ import retrofit2.http.Path;
 
 public interface ApiInterface {
 
-    @Headers({"X-Requested-With", "XMLHttpRequest", "Content-Type", "application/json"})
-    @GET("sites/{site_id}/workers")
+    @Headers({"X-Requested-With:XMLHttpRequest", "Content-Type:application/json"})
+    @GET("api/sites/{site_id}/workers")
     Call<WorkersListResponse> getWorkers(@Path("site_id") String site_id);
 }
