@@ -11,19 +11,19 @@ import android.wakecap.co.wakecap.Models.Attributes;
 import android.wakecap.co.wakecap.Models.Item;
 import android.wakecap.co.wakecap.Models.WorkersListResponse;
 import android.wakecap.co.wakecap.R;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.widget.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerViewHolder> {
+public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerViewHolder>  implements Filterable {
 
     private List<Item> workersList;
+    private List<Item> workersListFiltered;
 
     public WorkersAdapter(List<Item> workersList) {
         this.workersList = workersList;
+        this.workersListFiltered = workersList;
     }
 
     @NonNull
@@ -56,8 +56,40 @@ public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerVi
 
     @Override
     public int getItemCount() {
-        Log.d("count", "getItemCount: " + workersList.size());
-        return workersList.size();
+//        Log.d("count", "getItemCount: " + workersList.size());
+        return workersListFiltered.size();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence charSequence) {
+                String charString = charSequence.toString();
+                if (charString.isEmpty()){
+                    workersListFiltered = workersList;
+                }else{
+                    List<Item> filteredResult = new ArrayList<>();
+
+                    for (Item row : workersList){
+                        if (row.getAttributes().getFullName().toLowerCase().contains(charString.toLowerCase())){
+                            filteredResult.add(row);
+                        }
+                    }
+
+                    workersListFiltered = filteredResult;
+                }
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = workersListFiltered;
+                return  filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                workersListFiltered = (List<Item>)  results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public class WorkerViewHolder extends RecyclerView.ViewHolder {
