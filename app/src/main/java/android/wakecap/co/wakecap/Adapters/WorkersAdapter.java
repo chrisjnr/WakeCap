@@ -2,6 +2,7 @@ package android.wakecap.co.wakecap.Adapters;
 
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,10 +21,16 @@ public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerVi
 
     private List<Item> workersList;
     private List<Item> workersListFiltered;
+    private ListItemClick listItemClick;
 
-    public WorkersAdapter(List<Item> workersList) {
+    public WorkersAdapter(List<Item> workersList, ListItemClick itemClick) {
         this.workersList = workersList;
         this.workersListFiltered = workersList;
+        this.listItemClick = itemClick;
+    }
+
+    public interface ListItemClick{
+        void  clickedWorker(Attributes workerDetails);
     }
 
     @NonNull
@@ -39,6 +46,12 @@ public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerVi
             final Attributes attributes = workersList.get(i).getAttributes();
             holder.workerName.setText(attributes.getFullName());
             holder.workerRole.setText(attributes.getRoles());
+            holder.cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    listItemClick.clickedWorker((attributes));
+                }
+            });
             if (attributes.getInventories().size() > 0 ){
                 if (attributes.getInventories().get(0).getAttributes().getIsOnline()){
                     holder.workerOnline.setImageResource(R.drawable.user_online);
@@ -96,6 +109,7 @@ public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerVi
         public TextView workerRole;
         public TextView workerName;
         public ImageView workerOnline;
+        public CardView cardView;
 
 
         public WorkerViewHolder(@NonNull View itemView) {
@@ -103,6 +117,7 @@ public class WorkersAdapter extends RecyclerView.Adapter<WorkersAdapter.WorkerVi
             workerOnline = itemView.findViewById(R.id.workerOnline);
             workerRole = itemView.findViewById(R.id.workerRole);
             workerName = itemView.findViewById(R.id.workerName);
+            cardView = itemView.findViewById(R.id.cardView);
         }
     }
 }

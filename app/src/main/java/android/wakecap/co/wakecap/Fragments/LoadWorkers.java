@@ -1,8 +1,11 @@
 package android.wakecap.co.wakecap.Fragments;
 
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,13 +19,18 @@ import android.view.*;
 
 import android.wakecap.co.wakecap.Adapters.WorkersAdapter;
 import android.wakecap.co.wakecap.MainActivity;
+import android.wakecap.co.wakecap.Models.Attributes;
 import android.wakecap.co.wakecap.Models.Item;
 import android.wakecap.co.wakecap.Models.WorkersListResponse;
 import android.wakecap.co.wakecap.R;
 import android.wakecap.co.wakecap.Retrofit.ApiInterface;
 import android.wakecap.co.wakecap.Retrofit.RetrofitCompatJson;
 import android.wakecap.co.wakecap.ViewModels.WorkersViewModel;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -36,14 +44,8 @@ import java.util.List;
 public class LoadWorkers extends Fragment {
 
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    Dialog myDialog;
     public SearchView searchView;
     public RecyclerView recyclerView;
     public WorkersAdapter adapter;
@@ -52,8 +54,6 @@ public class LoadWorkers extends Fragment {
     public List<WorkersListResponse> workerList;
     private ProgressBar progressBar;
     WorkersViewModel workersViewModel;
-
-    private OnFragmentInteractionListener mListener;
 
     public LoadWorkers() {
         // Required empty public constructor
@@ -70,7 +70,49 @@ public class LoadWorkers extends Fragment {
         recyclerView.setHasFixedSize(true);
         contactList = new ArrayList<>();
         workersViewModel  = ViewModelProviders.of(getActivity()).get(WorkersViewModel.class);
-        mAdapter = new WorkersAdapter( contactList);
+        mAdapter = new WorkersAdapter(contactList, new WorkersAdapter.ListItemClick() {
+            @Override
+            public void clickedWorker(Attributes workerDetails) {
+                myDialog = new Dialog(getContext());
+                myDialog.setContentView(R.layout.worker_profile);
+                ImageButton closeDialog = myDialog.findViewById(R.id.closeDialog);
+                TextView fullName = myDialog.findViewById(R.id.userName);
+                TextView role  = myDialog.findViewById(R.id.workerRole);
+                TextView workerId = myDialog.findViewById(R.id.workerId);
+                ImageView helmetColor = myDialog.findViewById(R.id.helmetColor);
+                TextView available = myDialog.findViewById(R.id.available);
+                TextView phoneNumber = myDialog.findViewById(R.id.phoneNumber);
+
+                closeDialog.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        myDialog.dismiss();
+                    }
+                });
+                fullName.setText(workerDetails.getFullName());
+                role.setText(workerDetails.getRoles());
+                workerId.setText(String.valueOf(workerDetails.getId()));
+                Toast.makeText(getContext(), ""+workerDetails.getHelmetColor(), Toast.LENGTH_SHORT).show();
+//                helmetColor.setBackgroundColor(Color.parseColor(workerDetails.getHelmetColor()));
+                if(workerDetails.getInventories().get(0).getAttributes().getIsOnline()){
+                    available.setText(getString(R.string.online));
+                }else{
+                    available.setText(getString(R.string.offline));
+                }
+                if(workerDetails.getMobileNumber() == null){
+                    phoneNumber.setText(R.string.not_config);
+                }else{
+                    phoneNumber.setText(workerDetails.getMobileNumber().toString());
+                }
+
+                myDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                int width = (int)(getResources().getDisplayMetrics().widthPixels*0.90);
+                int height = (int)(getResources().getDisplayMetrics().heightPixels*0.90);
+                myDialog.getWindow().setLayout(width, height);
+                myDialog.show();
+
+            }
+        });
         recyclerView.setAdapter(mAdapter);
 
 
@@ -87,23 +129,16 @@ public class LoadWorkers extends Fragment {
         call.enqueue(new Callback<WorkersListResponse>() {
             @Override
             public void onResponse(Call<WorkersListResponse> call, Response<WorkersListResponse> response) {
-//                Toast.makeText(MainActivity.this, ""+response.body().getData().getItems().get(0).getAttributes().getFirstName(), Toast.LENGTH_SHORT).show();
                 if (response.code() == 200){
                     workersViewModel.setWorkersList(response.body().getData().getItems());
-//                    adapter = new WorkersAdapter(response.body().getData().getItems(), null);
-//                    adapter.notifyDataSetChanged();
                     progressBar.setVisibility(View.GONE);
                     recyclerView.setVisibility(View.VISIBLE);
-//                    recyclerView.setAdapter(adapter);
                     contactList.clear();
                     contactList.addAll(response.body().getData().getItems());
-                    // refreshing recycler view
                     mAdapter.notifyDataSetChanged();
 
 
                 }
-//
-// Log.d("allworkers", "onResponse: "+ response.body().getData().getItems().get(0).getAttributes().getFirstName());
             }
 
             @Override
@@ -118,10 +153,6 @@ public class LoadWorkers extends Fragment {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
 
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
@@ -131,28 +162,11 @@ public class LoadWorkers extends Fragment {
         return inflater.inflate(R.layout.fragment_load_workers, container, false);
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-    }
 
     @Override
     public void onDetach() {
         super.onDetach();
-//        mListener = null;
     }
 
 
@@ -201,10 +215,4 @@ public class LoadWorkers extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
-
-
-    public interface OnFragmentInteractionListener {
-        // TODO: i still need to update this
-        void onFragmentInteraction(Uri uri);
-    }
 }

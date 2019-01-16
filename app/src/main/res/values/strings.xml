@@ -4,4 +4,19 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="search_hint">Search a Worker Name</string>
+    <string name="select_role">Select Role</string>
+    <string name="engineer">Engineer</string>
+    <string name="worker_id">Worker ID</string>
+    <string name="role">Role</string>
+    <string name="full_name">Full Name</string>
+    <string name="light_blue_background">Light Blue Background</string>
+    <string name="close_window">Close Window</string>
+    <string name="selected_user_s_image">Selected User\'s Image</string>
+    <string name="helmet_color">Helmet Color</string>
+    <string name="manuel_chris_ogar">Manuel Chris Ogar</string>
+    <string name="user_availability">User Availability</string>
+    <string name="online">Online</string>
+    <string name="offline">Offline</string>
+    <string name="offline2">Offline</string>
+    <string name="not_config">Not Configured</string>
 </resources>
